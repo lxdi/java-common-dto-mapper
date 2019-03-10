@@ -1,0 +1,28 @@
+apply plugin: 'java'
+//apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+group = 'com.sogoodlabs'
+version = '1.0.0'
+
+publishing {
+    publications {
+        commonMapperLibrary(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+repositories {
+    //mavenCentral()
+    mavenLocal()
+    maven { url 'http://repo1.maven.org/maven2' }
+}
+
+dependencies{
+    compile "org.hibernate:hibernate-core:5.2.8.Final"
+
+    testCompile "junit:junit:4.12"
+    testCompile "com.h2database:h2:1.4.196"
+    testCompile "org.springframework:spring-orm:4.3.7.RELEASE"
+}
