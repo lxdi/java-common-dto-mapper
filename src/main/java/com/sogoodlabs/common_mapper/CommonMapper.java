@@ -51,23 +51,25 @@ public class CommonMapper {
     private void mapFromMethod(Object entity, Map<String, Object> result, Method method) {
         try {
             Object fromGetter = method.invoke(entity);
-            if (fromGetter != null) {
-                if (fromGetter instanceof String || fromGetter instanceof Number || fromGetter.getClass().isPrimitive()
-                    || fromGetter instanceof Boolean) {
-                    //Number/String/Boolean
-                    result.put(transformGetterToFieldName(method.getName()), fromGetter);
-                } else {
-                    if(fromGetter.getClass().isEnum()){
-                        //Enum
-                        Method valueMethod = fromGetter.getClass().getMethod("value");
-                        result.put(transformGetterToFieldName(method.getName()), valueMethod.invoke(fromGetter));
+            if (!customMapping(entity, result, method, fromGetter)) {
+                if (fromGetter != null) {
+                    if (fromGetter instanceof String || fromGetter instanceof Number || fromGetter.getClass().isPrimitive()
+                            || fromGetter instanceof Boolean) {
+                        //Number/String/Boolean
+                        result.put(transformGetterToFieldName(method.getName()), fromGetter);
                     } else {
-                        //Object
-                        Method getIdMethod = fromGetter.getClass().getMethod("getId");
-                        long id = (long) getIdMethod.invoke(fromGetter);
-                        result.put(transformGetterToFieldName(method.getName()) + "id", id);
-                    }
+                        if (fromGetter.getClass().isEnum()) {
+                            //Enum
+                            Method valueMethod = fromGetter.getClass().getMethod("value");
+                            result.put(transformGetterToFieldName(method.getName()), valueMethod.invoke(fromGetter));
+                        } else {
+                            //Object
+                            Method getIdMethod = fromGetter.getClass().getMethod("getId");
+                            long id = (long) getIdMethod.invoke(fromGetter);
+                            result.put(transformGetterToFieldName(method.getName()) + "id", id);
+                        }
 
+                    }
                 }
             }
         } catch (IllegalAccessException e) {
@@ -77,6 +79,10 @@ public class CommonMapper {
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean customMapping(Object entity, Map<String, Object> result, Method method, Object fromGetter){
+        return false;
     }
 
 

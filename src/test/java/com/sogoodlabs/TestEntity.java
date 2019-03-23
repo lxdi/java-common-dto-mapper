@@ -21,6 +21,8 @@ public class TestEntity {
 
     int intvalue;
 
+    String forCustomMapping;
+
     public long getId() {
         return id;
     }
@@ -82,5 +84,12 @@ public class TestEntity {
     }
     public void setIntvalue(int intvalue) {
         this.intvalue = intvalue;
+    }
+
+    public String getForCustomMapping() {
+        return forCustomMapping;
+    }
+    public void setForCustomMapping(String forCustomMapping) {
+        this.forCustomMapping = forCustomMapping;
     }
 }

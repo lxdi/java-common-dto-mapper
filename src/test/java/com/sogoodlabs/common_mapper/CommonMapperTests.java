@@ -6,6 +6,7 @@ import com.sogoodlabs.TestSecondEntity;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -109,6 +110,28 @@ public class CommonMapperTests {
 
         assertTrue(testEntity.getId()==15);
         assertTrue(testEntity.getTitle().equals("45"));
+    }
+
+    @Test
+    public void customMappingTest(){
+        CommonMapper commonMapper = new CommonMapper(entityById){
+            @Override
+            public boolean customMapping(Object entity, Map<String, Object> result, Method method, Object fromGetter){
+                if(method.getName().equals("getForCustomMapping")){
+                    result.put("forCustomMapping", "default value for custom mapping");
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        TestEntity testEntity = new TestEntity();
+        testEntity.setForCustomMapping("some value");
+
+        Map<String, Object> result = commonMapper.mapToDto(testEntity, new HashMap<>());
+
+        assertTrue(result.get("forCustomMapping").equals("default value for custom mapping"));
+
     }
 
 }
