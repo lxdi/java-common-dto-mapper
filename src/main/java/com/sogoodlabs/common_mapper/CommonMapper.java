@@ -88,7 +88,7 @@ public class CommonMapper {
 
     //-------------------------- Map to Entity -----------------------------------------------
 
-    public Object mapToEntity(Map<String, Object> dto, Object entity) {
+    public <T> T mapToEntity(Map<String, Object> dto, T entity) {
         try {
             for (Map.Entry<String, Object> entry : dto.entrySet()) {
                 if (entry.getValue() != null){

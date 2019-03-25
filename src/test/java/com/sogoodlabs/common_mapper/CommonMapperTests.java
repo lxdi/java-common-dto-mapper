@@ -86,7 +86,7 @@ public class CommonMapperTests {
         dto.put("notExisting2id", "someval");
         dto.put("intvalue", "20");
 
-        TestEntity testEntity = (TestEntity) commonMapperTest.mapToEntity(dto, new TestEntity());
+        TestEntity testEntity = commonMapperTest.mapToEntity(dto, new TestEntity());
 
         assertTrue(testEntity.getId()==15);
         assertTrue(testEntity.getTitle().equals("test title2"));
@@ -106,7 +106,7 @@ public class CommonMapperTests {
         dto.put("id", "15");
         dto.put("title", "45");
 
-        TestEntity testEntity = (TestEntity) commonMapperTest.mapToEntity(dto, new TestEntity());
+        TestEntity testEntity = commonMapperTest.mapToEntity(dto, new TestEntity());
 
         assertTrue(testEntity.getId()==15);
         assertTrue(testEntity.getTitle().equals("45"));
