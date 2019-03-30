@@ -78,6 +78,10 @@ public class TestEntity {
         this.booleanVal = booleanVal;
     }
 
+    public String getNotExistingField(){
+        return "not exist";
+    }
+
     @MapForLazy
     public int getIntvalue() {
         return intvalue;

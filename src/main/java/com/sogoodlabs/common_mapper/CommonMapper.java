@@ -5,6 +5,7 @@ import com.sogoodlabs.common_mapper.annotations.MapForLazy;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,18 +14,24 @@ import static com.sogoodlabs.common_mapper.util.GetterSetterUtils.*;
 public class CommonMapper {
 
     private IEntityById entityById;
+    private Configuration configuration;
 
     public CommonMapper(IEntityById entityById){
         this.entityById = entityById;
+        this.configuration = new Configuration();
+    }
+
+    public CommonMapper(IEntityById entityById, Configuration configuration){
+        this.entityById = entityById;
+        this.configuration = configuration;
     }
 
     public Map<String, Object> mapToDto(Object entity, Map<String, Object> result) {
-//        for (Method m : entity.getClass().getDeclaredMethods()) {
-//            if (m.getName().startsWith("get")) {
-//                mapFromMethod(entity, result, m);
-//            }
-//        }
         return mapToDtoWithIncludes(entity, result, null);
+    }
+
+    public Map<String, Object> mapToDto(Object entity) {
+        return mapToDto(entity, new HashMap<>());
     }
 
     public Map<String, Object> mapToDtoWithIncludes(Object entity, Map<String, Object> result, Set<String> toInclude) {
@@ -47,18 +54,21 @@ public class CommonMapper {
         return result;
     }
 
+    enum MappingType{
+        simple, enumeration, obj
+    }
 
     private void mapFromMethod(Object entity, Map<String, Object> result, Method method) {
         try {
+            MappingType mappingType = defineMappingType(method);
             Object fromGetter = method.invoke(entity);
             if (!customMapping(entity, result, method, fromGetter)) {
                 if (fromGetter != null) {
-                    if (fromGetter instanceof String || fromGetter instanceof Number || fromGetter.getClass().isPrimitive()
-                            || fromGetter instanceof Boolean) {
+                    if (mappingType == MappingType.simple) {
                         //Number/String/Boolean
                         result.put(transformGetterToFieldName(method.getName()), fromGetter);
                     } else {
-                        if (fromGetter.getClass().isEnum()) {
+                        if (mappingType == MappingType.enumeration) {
                             //Enum
                             Method valueMethod = fromGetter.getClass().getMethod("value");
                             result.put(transformGetterToFieldName(method.getName()), valueMethod.invoke(fromGetter));
@@ -70,15 +80,34 @@ public class CommonMapper {
                         }
 
                     }
+                } else {
+                    if(configuration.mapEmptyFields){
+                        if(mappingType == MappingType.obj)
+                            result.put(transformGetterToFieldName(method.getName()) + "id", null);
+                        else
+                            result.put(transformGetterToFieldName(method.getName()), null);
+                    }
                 }
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
+    }
+
+    private MappingType defineMappingType(Method method){
+        Class returnType = method.getReturnType();
+        if(returnType.isAssignableFrom(String.class) || returnType.isAssignableFrom(Number.class)
+                || returnType.isPrimitive() || returnType.isAssignableFrom(Boolean.class)){
+            return MappingType.simple;
+        }
+        if(returnType.isEnum()){
+            return MappingType.enumeration;
+        }
+        return MappingType.obj;
     }
 
     public boolean customMapping(Object entity, Map<String, Object> result, Method method, Object fromGetter){
@@ -89,14 +118,14 @@ public class CommonMapper {
     //-------------------------- Map to Entity -----------------------------------------------
 
     public <T> T mapToEntity(Map<String, Object> dto, T entity) {
-        try {
-            for (Map.Entry<String, Object> entry : dto.entrySet()) {
-                if (entry.getValue() != null){
+        for (Map.Entry<String, Object> entry : dto.entrySet()) {
+            try {
+                if (entry.getValue() != null) {
                     if (entry.getKey().length() > 2 && entry.getKey().endsWith("id")) {
                         //Object
                         String fieldName = entry.getKey().substring(0, entry.getKey().length() - 2);
                         Class clazz = defineTypeByGetter(entity.getClass(), fieldName);
-                        if(clazz!=null){
+                        if (clazz != null) {
                             Method setter = entity.getClass().getMethod(transformToSetter(fieldName), clazz);
                             setter.invoke(entity,
                                     entityById.get(Long.parseLong("" + entry.getValue()), clazz));
@@ -108,13 +137,13 @@ public class CommonMapper {
                         }
                     }
                 }
+            } catch (NoSuchMethodException e) {
+                //e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                //e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                //e.printStackTrace();
             }
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
         }
 
         return entity;
@@ -134,7 +163,8 @@ public class CommonMapper {
             if(clazz.isEnum()){
                 //Enum
                 setter.invoke(entity, getEnumVal((String) entry.getValue(), clazz));
-            } else {
+            }
+            if(clazz.isAssignableFrom(String.class)){
                 //String
                 setter.invoke(entity, entry.getValue());
             }

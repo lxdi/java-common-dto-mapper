@@ -69,6 +69,30 @@ public class CommonMapperTests {
     }
 
     @Test
+    public void toDtoMappingEmptyFields(){
+        Configuration configuration = new Configuration();
+        configuration.mapEmptyFields = true;
+
+        CommonMapper commonMapperTest = new CommonMapper(entityById, configuration);
+
+        TestEntity testEntity = new TestEntity();
+        Map<String, Object> dto = commonMapperTest.mapToDto(testEntity);
+
+        assertTrue(dto.containsKey("title"));
+        assertTrue(dto.containsKey("id"));
+
+        TestEntity testEntity2 = new TestEntity();
+        testEntity2.setId(123);
+        testEntity2.setTitle("test title");
+
+        Map<String, Object> dto2 = commonMapperTest.mapToDto(testEntity2);
+
+        assertTrue(dto2.get("title").equals("test title"));
+        assertTrue((long)dto2.get("id") == 123);
+
+    }
+
+    @Test
     public void toEntityTest(){
         CommonMapper commonMapperTest = new CommonMapper(entityById);
 
