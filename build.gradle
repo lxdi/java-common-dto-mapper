@@ -3,7 +3,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 group = 'com.sogoodlabs'
-version = '1.0.0'
+version = '1.0.1'
 
 publishing {
     publications {
@@ -14,13 +14,13 @@ publishing {
 }
 
 repositories {
-    //mavenCentral()
+    //maven { url 'http://repo1.maven.org/maven2' }
+    mavenCentral()
     mavenLocal()
-    maven { url 'http://repo1.maven.org/maven2' }
 }
 
 dependencies{
-    compile "org.hibernate:hibernate-core:5.2.8.Final"
+    implementation "org.hibernate:hibernate-core:5.2.8.Final"
 
     testCompile "junit:junit:4.12"
     testCompile "com.h2database:h2:1.4.196"

@@ -46,7 +46,6 @@ public class CommonMapper {
 
     public Map<String, Object> mapToDtoLazy(Object entity, Map<String, Object> result) {
         for (Method m : entity.getClass().getDeclaredMethods()) {
-
             if (isGetter(m) && m.isAnnotationPresent(MapForLazy.class)) {
                 mapFromMethod(entity, result, m);
             }

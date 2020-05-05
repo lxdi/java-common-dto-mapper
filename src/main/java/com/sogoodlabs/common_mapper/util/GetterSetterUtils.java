@@ -8,9 +8,7 @@ public class GetterSetterUtils {
         String getter = transformToGetter(field);
         try {
             return clazz.getMethod(getter).getReturnType();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
+        } catch (NoSuchMethodException e) {}
         return null;
     }
 
