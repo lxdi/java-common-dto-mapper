@@ -11,10 +11,10 @@ import static junit.framework.TestCase.assertTrue;
 
 public class CommonMapper_LazyMappingTests {
 
-    IEntityById entityById = new IEntityById(){
+    IEntityById entityById = new IEntityById<Long>(){
 
         @Override
-        public Object get(long id, Class clazz) {
+        public Object get(Long id, Class clazz) {
             return null;
         }
     };

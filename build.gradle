@@ -3,7 +3,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 group = 'com.sogoodlabs'
-version = '1.0.1'
+version = '1.0.2'
 
 publishing {
     publications {
@@ -20,7 +20,9 @@ repositories {
 }
 
 dependencies{
-    implementation "org.hibernate:hibernate-core:5.2.8.Final"
+    //implementation "org.hibernate:hibernate-core:5.2.8.Final"
+
+    implementation group: 'org.hibernate', name: 'hibernate-annotations', version: "3.5.6-Final"
 
     testCompile "junit:junit:4.12"
     testCompile "com.h2database:h2:1.4.196"

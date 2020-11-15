@@ -74,15 +74,15 @@ public class CommonMapper {
                         } else {
                             //Object
                             Method getIdMethod = fromGetter.getClass().getMethod("getId");
-                            long id = (long) getIdMethod.invoke(fromGetter);
-                            result.put(transformGetterToFieldName(method.getName()) + "id", id);
+                            Object id = getIdMethod.invoke(fromGetter);
+                            result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, id);
                         }
 
                     }
                 } else {
                     if(configuration.mapEmptyFields){
                         if(mappingType == MappingType.obj)
-                            result.put(transformGetterToFieldName(method.getName()) + "id", null);
+                            result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, null);
                         else
                             result.put(transformGetterToFieldName(method.getName()), null);
                     }
@@ -120,14 +120,17 @@ public class CommonMapper {
         for (Map.Entry<String, Object> entry : dto.entrySet()) {
             try {
                 if (entry.getValue() != null) {
-                    if (entry.getKey().length() > 2 && entry.getKey().endsWith("id")) {
+                    if (entry.getKey().length() > 2 && entry.getKey().endsWith(configuration.idOffset)) {
                         //Object
                         String fieldName = entry.getKey().substring(0, entry.getKey().length() - 2);
                         Class clazz = defineTypeByGetter(entity.getClass(), fieldName);
                         if (clazz != null) {
                             Method setter = entity.getClass().getMethod(transformToSetter(fieldName), clazz);
-                            setter.invoke(entity,
-                                    entityById.get(Long.parseLong("" + entry.getValue()), clazz));
+                            Object id = entry.getValue();
+                            if(id instanceof Integer){
+                                id = new Long((Integer)id);
+                            }
+                            setter.invoke(entity, entityById.get(id, clazz));
                         }
                     } else {
                         Class clazz = defineTypeByGetter(entity.getClass(), entry.getKey());

@@ -1,7 +1,7 @@
 package com.sogoodlabs.common_mapper;
 
-public interface IEntityById {
+public interface IEntityById<T> {
 
-    Object get(long id, Class clazz);
+    Object get(T id, Class clazz);
 
 }

@@ -1,6 +1,7 @@
 package com.sogoodlabs.common_mapper;
 
 import com.sogoodlabs.TestEntity;
+import com.sogoodlabs.TestEntity2;
 import com.sogoodlabs.TestEnum;
 import com.sogoodlabs.TestSecondEntity;
 import org.junit.Before;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class CommonMapperTests {
 
@@ -18,9 +20,9 @@ public class CommonMapperTests {
 
     TestSecondEntity testSecondEntityFromEntityById = new TestSecondEntity();
 
-    IEntityById entityById = new IEntityById() {
+    IEntityById entityById = new IEntityById<Long>() {
         @Override
-        public Object get(long id, Class clazz) {
+        public Object get(Long id, Class clazz) {
             if(clazz == TestEntity.class){
                 if(id==56){
                     return testEntityFromEntityById;
@@ -157,5 +159,7 @@ public class CommonMapperTests {
         assertTrue(result.get("forCustomMapping").equals("default value for custom mapping"));
 
     }
+
+
 
 }
