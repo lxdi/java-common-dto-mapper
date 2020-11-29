@@ -116,6 +116,10 @@ public class CommonMapper {
     //-------------------------- Map to Entity -----------------------------------------------
 
     public <T> T mapToEntity(Map<String, Object> dto, T entity) {
+        return mapToEntity(dto, entity, true);
+    }
+
+    public <T> T mapToEntity(Map<String, Object> dto, T entity, boolean isMapEntities) {
         for (Map.Entry<String, Object> entry : dto.entrySet()) {
             try {
                 if (entry.getValue() == null) {
@@ -123,6 +127,11 @@ public class CommonMapper {
                 }
 
                 if (entry.getKey().length() > 2 && entry.getKey().endsWith(configuration.idOffset)) {
+
+                    if(!isMapEntities){
+                        continue;
+                    }
+
                     //Object
                     String fieldName = entry.getKey().substring(0, entry.getKey().length() - 2);
                     Class clazz = defineTypeByGetter(entity.getClass(), fieldName);
@@ -183,12 +192,13 @@ public class CommonMapper {
                 //String
                 setter.invoke(entity, entry.getValue());
             }
+
             if(clazz.isAssignableFrom(List.class) && setter.isAnnotationPresent(MapToClass.class)){
                 //List
                 Class listOfCls = setter.getAnnotation(MapToClass.class).value();
                 List entityList = new ArrayList();
                 for(Map<String, Object> dto : (List<Map<String, Object>>) entry.getValue()){
-                    entityList.add(mapToEntity(dto, listOfCls.getConstructor().newInstance()));
+                    entityList.add(mapToEntity(dto, listOfCls.getConstructor().newInstance(), false));
                 }
                 setter.invoke(entity, entityList);
             }
