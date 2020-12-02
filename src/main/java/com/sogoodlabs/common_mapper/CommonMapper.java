@@ -1,6 +1,7 @@
 package com.sogoodlabs.common_mapper;
 
 
+import com.sogoodlabs.common_mapper.annotations.IncludeInDto;
 import com.sogoodlabs.common_mapper.annotations.MapForLazy;
 import com.sogoodlabs.common_mapper.annotations.MapToClass;
 
@@ -53,40 +54,60 @@ public class CommonMapper {
     }
 
     enum MappingType{
-        simple, enumeration, obj
+        simple, enumeration, obj, list
     }
 
     private void mapFromMethod(Object entity, Map<String, Object> result, Method method) {
         try {
             MappingType mappingType = defineMappingType(method);
             Object fromGetter = method.invoke(entity);
-            if (!customMapping(entity, result, method, fromGetter)) {
-                if (fromGetter != null) {
-                    if (mappingType == MappingType.simple) {
-                        //Number/String/Boolean
-                        result.put(transformGetterToFieldName(method.getName()), fromGetter);
-                    } else {
-                        if (mappingType == MappingType.enumeration) {
-                            //Enum
-                            Method valueMethod = fromGetter.getClass().getMethod("value");
-                            result.put(transformGetterToFieldName(method.getName()), valueMethod.invoke(fromGetter));
-                        } else {
-                            //Object
-                            Method getIdMethod = fromGetter.getClass().getMethod("getId");
-                            Object id = getIdMethod.invoke(fromGetter);
-                            result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, id);
-                        }
 
-                    }
-                } else {
-                    if(configuration.mapEmptyFields){
-                        if(mappingType == MappingType.obj)
-                            result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, null);
-                        else
-                            result.put(transformGetterToFieldName(method.getName()), null);
+            if (customMapping(entity, result, method, fromGetter)) {
+                return;
+            }
+
+            if (fromGetter == null) {
+                if (configuration.mapEmptyFields) {
+                    if (mappingType == MappingType.obj) {
+                        result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, null);
+                    } else {
+                        result.put(transformGetterToFieldName(method.getName()), null);
                     }
                 }
+                return;
             }
+
+            if (mappingType == MappingType.simple) {
+                //Number/String/Boolean
+                result.put(transformGetterToFieldName(method.getName()), fromGetter);
+                return;
+            }
+
+            if (mappingType == MappingType.list) {
+                //List
+
+                if(!method.isAnnotationPresent(IncludeInDto.class)){
+                    return;
+                }
+
+                List<Map<String, Object>> list = new ArrayList<>();
+                ((List)fromGetter).forEach(obj -> list.add(mapToDto(obj)));
+                result.put(transformGetterToFieldName(method.getName()), list);
+                return;
+            }
+
+            if (mappingType == MappingType.enumeration) {
+                //Enum
+                Method valueMethod = fromGetter.getClass().getMethod("value");
+                result.put(transformGetterToFieldName(method.getName()), valueMethod.invoke(fromGetter));
+                return;
+            }
+
+            //Object
+            Method getIdMethod = fromGetter.getClass().getMethod("getId");
+            Object id = getIdMethod.invoke(fromGetter);
+            result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, id);
+
         } catch (IllegalAccessException e) {
             //e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -98,13 +119,21 @@ public class CommonMapper {
 
     private MappingType defineMappingType(Method method){
         Class returnType = method.getReturnType();
+
         if(returnType.isAssignableFrom(String.class) || returnType.isAssignableFrom(Number.class)
                 || returnType.isPrimitive() || returnType.isAssignableFrom(Boolean.class)){
+
             return MappingType.simple;
         }
+
         if(returnType.isEnum()){
             return MappingType.enumeration;
         }
+
+        if(returnType.isAssignableFrom(List.class)){
+            return MappingType.list;
+        }
+
         return MappingType.obj;
     }
 

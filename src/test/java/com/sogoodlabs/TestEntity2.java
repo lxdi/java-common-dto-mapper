@@ -1,5 +1,6 @@
 package com.sogoodlabs;
 
+import com.sogoodlabs.common_mapper.annotations.IncludeInDto;
 import com.sogoodlabs.common_mapper.annotations.MapToClass;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public class TestEntity2 {
     TestEntity3 someObj;
 
     List<TestEntity3> entity3s;
+    List<TestEntity3> entity3s2;
 
     List<String> strings;
 
@@ -38,6 +40,7 @@ public class TestEntity2 {
         this.someObj = someObj;
     }
 
+    @IncludeInDto
     public List<TestEntity3> getEntity3s() {
         return entity3s;
     }
@@ -53,5 +56,12 @@ public class TestEntity2 {
 
     public void setStrings(List<String> strings) {
         this.strings = strings;
+    }
+
+    public List<TestEntity3> getEntity3s2() {
+        return entity3s2;
+    }
+    public void setEntity3s2(List<TestEntity3> entity3s2) {
+        this.entity3s2 = entity3s2;
     }
 }
