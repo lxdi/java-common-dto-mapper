@@ -38,6 +38,7 @@ public class CommonMapper {
         for (Method m : entity.getClass().getDeclaredMethods()) {
             if (isGetter(m)
                     && (toInclude==null || (toInclude!=null && toInclude.contains(transformGetterToFieldName(m.getName()))))) {
+
                 mapFromMethod(entity, result, m);
             }
         }
@@ -104,6 +105,11 @@ public class CommonMapper {
             }
 
             //Object
+            if(method.isAnnotationPresent(IncludeInDto.class)){
+                result.put(transformGetterToFieldName(method.getName()), mapToDto(fromGetter));
+                return;
+            }
+
             Method getIdMethod = fromGetter.getClass().getMethod("getId");
             Object id = getIdMethod.invoke(fromGetter);
             result.put(transformGetterToFieldName(method.getName()) + configuration.idOffset, id);

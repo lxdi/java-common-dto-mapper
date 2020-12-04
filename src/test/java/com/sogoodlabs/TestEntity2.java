@@ -12,6 +12,8 @@ public class TestEntity2 {
 
     TestEntity3 someObj;
 
+    TestEntity3 someObj2;
+
     List<TestEntity3> entity3s;
     List<TestEntity3> entity3s2;
 
@@ -63,5 +65,14 @@ public class TestEntity2 {
     }
     public void setEntity3s2(List<TestEntity3> entity3s2) {
         this.entity3s2 = entity3s2;
+    }
+
+    @IncludeInDto
+    public TestEntity3 getSomeObj2() {
+        return someObj2;
+    }
+
+    public void setSomeObj2(TestEntity3 someObj2) {
+        this.someObj2 = someObj2;
     }
 }

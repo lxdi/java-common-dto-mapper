@@ -45,6 +45,7 @@ public class CommonMappperTest_mappingFromLists {
         testObj1.setTitle("testObj1Title");
         testObj1.setEntity3s(Arrays.asList(testObj2, testObj3, testObj4));
         testObj1.setEntity3s2(Arrays.asList(testObj2, testObj3, testObj4));
+        testObj1.setSomeObj2(testObj2);
 
     }
 
@@ -63,6 +64,9 @@ public class CommonMappperTest_mappingFromLists {
         assertEquals(testObj2Id, ((Map)((List)dto.get("entity3s")).get(0)).get("id"));
         assertEquals(testObj3Id, ((Map)((List)dto.get("entity3s")).get(1)).get("id"));
         assertEquals(testObj4Id, ((Map)((List)dto.get("entity3s")).get(2)).get("id"));
+
+        assertNotNull(dto.get("someObj2"));
+        assertEquals(testObj2Id, ((Map<String, Object>)dto.get("someObj2")).get("id"));
     }
 
     private TestEntity3 create(String id, String title){
