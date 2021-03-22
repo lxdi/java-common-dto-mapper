@@ -230,10 +230,11 @@ public class CommonMapper {
 
             if(clazz.isAssignableFrom(List.class) && setter.isAnnotationPresent(MapToClass.class)){
                 //List
-                Class listOfCls = setter.getAnnotation(MapToClass.class).value();
+                MapToClass mapToClass = setter.getAnnotation(MapToClass.class);
+                Class listOfCls = mapToClass.value();
                 List entityList = new ArrayList();
                 for(Map<String, Object> dto : (List<Map<String, Object>>) entry.getValue()){
-                    entityList.add(mapToEntity(dto, listOfCls.getConstructor().newInstance(), false));
+                    entityList.add(mapToEntity(dto, listOfCls.getConstructor().newInstance(), mapToClass.mapEntities()));
                 }
                 setter.invoke(entity, entityList);
             }

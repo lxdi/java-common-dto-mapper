@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface MapToClass {
 
     Class value() default Object.class;
+    boolean mapEntities() default false;
 }
