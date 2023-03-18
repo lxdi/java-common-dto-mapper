@@ -5,6 +5,8 @@ public class TestEntity3 {
     String id;
     String title;
 
+    TestEntity2 parent;
+
     public String getId() {
         return id;
     }
@@ -18,5 +20,13 @@ public class TestEntity3 {
     }
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public TestEntity2 getParent() {
+        return parent;
+    }
+
+    public void setParent(TestEntity2 parent) {
+        this.parent = parent;
     }
 }

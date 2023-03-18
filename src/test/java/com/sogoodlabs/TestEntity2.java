@@ -17,6 +17,8 @@ public class TestEntity2 {
     List<TestEntity3> entity3s;
     List<TestEntity3> entity3s2;
 
+    List<TestEntity3> entity3s3;
+
     List<String> strings;
 
     public String getId() {
@@ -47,9 +49,18 @@ public class TestEntity2 {
         return entity3s;
     }
 
-    @MapToClass(value = TestEntity3.class)
+    @MapToClass(value = TestEntity3.class, parentField = "parent")
     public void setEntity3s(List<TestEntity3> entity3s) {
         this.entity3s = entity3s;
+    }
+
+    public List<TestEntity3> getEntity3s3() {
+        return entity3s3;
+    }
+
+    @MapToClass(value = TestEntity3.class)
+    public void setEntity3s3(List<TestEntity3> entity3s3) {
+        this.entity3s3 = entity3s3;
     }
 
     public List<String> getStrings() {

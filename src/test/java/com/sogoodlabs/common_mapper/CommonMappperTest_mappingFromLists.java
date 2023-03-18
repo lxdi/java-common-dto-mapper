@@ -51,7 +51,7 @@ public class CommonMappperTest_mappingFromLists {
 
 
     @Test
-    public void mapToEntityTest(){
+    public void mapToDtoTest(){
 
         CommonMapper commonMapper = new CommonMapper(entityById);
 
@@ -67,6 +67,30 @@ public class CommonMappperTest_mappingFromLists {
 
         assertNotNull(dto.get("someObj2"));
         assertEquals(testObj2Id, ((Map<String, Object>)dto.get("someObj2")).get("id"));
+    }
+
+    @Test
+    public void mapToEntityTest(){
+        CommonMapper commonMapper = new CommonMapper(entityById);
+
+        var testEntDto = new HashMap<String, Object>();
+
+        testEntDto.put("entity3s", List.of(
+                Map.of("title", "children", "parentid", ""),
+                Map.of("title", "children2")
+        ));
+
+        testEntDto.put("entity3s3", List.of(
+                Map.of("title", "children3")
+        ));
+
+        var entity = commonMapper.mapToEntity(testEntDto, new TestEntity2());
+
+        assertEquals(entity, entity.getEntity3s().get(0).getParent());
+        assertEquals(entity, entity.getEntity3s().get(1).getParent());
+
+        assertNull(entity.getEntity3s3().get(0).getParent());
+
     }
 
     private TestEntity3 create(String id, String title){

@@ -151,10 +151,20 @@ public class CommonMapper {
     //-------------------------- Map to Entity -----------------------------------------------
 
     public <T> T mapToEntity(Map<String, Object> dto, T entity) {
-        return mapToEntity(dto, entity, true);
+        return mapToEntity(dto, entity, null);
     }
 
-    public <T> T mapToEntity(Map<String, Object> dto, T entity, boolean isMapEntities) {
+    static class PredefinedEntity {
+        private Object value;
+        private String fieldName;
+
+        public PredefinedEntity(Object value, String fieldName) {
+            this.value = value;
+            this.fieldName = fieldName;
+        }
+    }
+
+    public <T> T mapToEntity(Map<String, Object> dto, T entity, List<PredefinedEntity> predefinedEntities) {
         for (Map.Entry<String, Object> entry : dto.entrySet()) {
             try {
                 if (entry.getValue() == null) {
@@ -163,26 +173,28 @@ public class CommonMapper {
 
                 if (entry.getKey().length() > 2 && entry.getKey().endsWith(configuration.idOffset)) {
 
-                    if(!isMapEntities){
-                        continue;
-                    }
-
                     //Object
                     String fieldName = entry.getKey().substring(0, entry.getKey().length() - 2);
-                    Class clazz = defineTypeByGetter(entity.getClass(), fieldName);
+                    Class fieldClass = defineTypeByGetter(entity.getClass(), fieldName);
 
-                    if (clazz == null) {
+                    if (fieldClass == null) {
                         continue;
                     }
 
-                    Method setter = entity.getClass().getMethod(transformToSetter(fieldName), clazz);
+                    Method setter = entity.getClass().getMethod(transformToSetter(fieldName), fieldClass);
                     Object id = entry.getValue();
 
                     if (id instanceof Integer) {
-                        id = new Long((Integer) id);
+                        id = ((Integer) id).longValue();
                     }
 
-                    setter.invoke(entity, entityById.get(id, clazz));
+                    var preDefEnt = getPredefinedEntity(predefinedEntities, fieldClass, fieldName);
+
+                    if(preDefEnt != null){
+                        setter.invoke(entity, preDefEnt);
+                    } else {
+                        setter.invoke(entity, entityById.get(id, fieldClass));
+                    }
 
                 } else {
                     Class clazz = defineTypeByGetter(entity.getClass(), entry.getKey());
@@ -208,8 +220,22 @@ public class CommonMapper {
         return entity;
     }
 
+    private Object getPredefinedEntity(List<PredefinedEntity> predefinedEntities, Class clazz, String fieldName){
+        if (predefinedEntities == null){
+            return null;
+        }
+
+        for(var entity : predefinedEntities) {
+            if (entity.value.getClass() == clazz && entity.fieldName.equals(fieldName)) {
+                return entity.value;
+            }
+        }
+        return null;
+    }
+
     private void mapToEntityBasicTypes(Object entity, Map.Entry<String, Object> entry, Class clazz) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         Method setter = entity.getClass().getMethod(transformToSetter(entry.getKey()), clazz);
+
         if (Number.class.isAssignableFrom(clazz) || clazz.isPrimitive()) {
             if(clazz==Boolean.class || clazz==boolean.class){
                 //Boolean
@@ -233,9 +259,23 @@ public class CommonMapper {
                 MapToClass mapToClass = setter.getAnnotation(MapToClass.class);
                 Class listOfCls = mapToClass.value();
                 List entityList = new ArrayList();
-                for(Map<String, Object> dto : (List<Map<String, Object>>) entry.getValue()){
-                    entityList.add(mapToEntity(dto, listOfCls.getConstructor().newInstance(), mapToClass.mapEntities()));
+
+                List<PredefinedEntity> preDefEnts = null;
+
+                if(!mapToClass.parentField().isEmpty()) {
+                    preDefEnts = List.of(new PredefinedEntity(entity, mapToClass.parentField()));
                 }
+
+                for(Map<String, Object> dto : (List<Map<String, Object>>) entry.getValue()){
+
+                    if (!mapToClass.parentField().isEmpty() && dto.get(mapToClass.parentField()+configuration.idOffset) == null){
+                        dto = new HashMap<>(dto);
+                        dto.put(mapToClass.parentField()+configuration.idOffset, "");
+                    }
+
+                    entityList.add(mapToEntity(dto, listOfCls.getConstructor().newInstance(), preDefEnts));
+                }
+
                 setter.invoke(entity, entityList);
             }
         }
